@@ -30,7 +30,6 @@ import {
   summarizeACPRequestError,
 } from "./acp-agent.js";
 import type { ProcessTerminator, TreeKillTarget } from "../../../utils/tree-kill.js";
-import { ANTIGRAVITY_MODES, writeAntigravityProviderMode } from "./antigravity-acp-agent.js";
 import {
   COPILOT_AGENT_FEATURE_OPTION,
   COPILOT_ALLOW_ALL_MODE_ID,
@@ -237,34 +236,6 @@ function createKiroSession(
       extensionCommandsParser: parseKiroExtensionCommands,
       waitForInitialCommands: options.waitForInitialCommands ?? false,
       initialCommandsWaitTimeoutMs: options.initialCommandsWaitTimeoutMs,
-    },
-  );
-}
-
-function createAntigravitySession(
-  config: { modeId?: string | null } = {},
-  logger: ReturnType<typeof createTestLogger> = createTestLogger(),
-): ACPAgentSession {
-  return new ACPAgentSession(
-    {
-      provider: "agy",
-      cwd: "/tmp/paseo-acp-test",
-      modeId: config.modeId ?? undefined,
-    },
-    {
-      provider: "agy",
-      logger,
-      defaultCommand: ["agy_acp_server"],
-      defaultModes: ANTIGRAVITY_MODES,
-      capabilities: {
-        supportsStreaming: true,
-        supportsSessionPersistence: true,
-        supportsDynamicModes: true,
-        supportsMcpServers: true,
-        supportsReasoningStream: true,
-        supportsToolInvocations: true,
-      },
-      providerModeWriter: writeAntigravityProviderMode,
     },
   );
 }
@@ -1573,46 +1544,6 @@ describe("ACPAgentSession Zed parity", () => {
       },
     ]);
     await expect(session.getCurrentMode()).resolves.toBe(COPILOT_ALLOW_ALL_MODE_ID);
-  });
-
-  test("maps Antigravity's requested plan mode onto the kernel's default mode", async () => {
-    const setSessionMode = vi.fn(async () => undefined);
-    const session = createAntigravitySession();
-    prepareConfiguredOverrideSession(session, {
-      currentMode: "default",
-      availableModes: [
-        { id: "default", label: "Default" },
-        { id: "auto_edit", label: "Auto Edit" },
-        { id: "yolo", label: "YOLO" },
-      ],
-      connection: { setSessionMode },
-    });
-
-    await session.setMode("plan");
-
-    expect(setSessionMode).toHaveBeenCalledWith({ sessionId: "session-1", modeId: "default" });
-    await expect(session.getCurrentMode()).resolves.toBe("default");
-    await expect(session.getAvailableModes()).resolves.toEqual(ANTIGRAVITY_MODES);
-  });
-
-  test("routes a stored plan mode preference to Antigravity's default mode on session start", async () => {
-    const setSessionMode = vi.fn(async () => undefined);
-    const session = createAntigravitySession({ modeId: "plan" });
-    const { internals } = prepareConfiguredOverrideSession(session, {
-      currentMode: "auto_edit",
-      availableModes: [
-        { id: "default", label: "Default" },
-        { id: "auto_edit", label: "Auto Edit" },
-        { id: "yolo", label: "YOLO" },
-      ],
-      connection: { setSessionMode },
-    });
-
-    await internals.applyConfiguredOverrides();
-
-    expect(setSessionMode).toHaveBeenCalledWith({ sessionId: "session-1", modeId: "default" });
-    await expect(session.getCurrentMode()).resolves.toBe("default");
-    await expect(session.getAvailableModes()).resolves.toEqual(ANTIGRAVITY_MODES);
   });
 
   test("exposes Copilot custom agents as a select feature", () => {

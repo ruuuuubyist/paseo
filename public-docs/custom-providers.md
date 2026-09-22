@@ -176,6 +176,8 @@ EOF
 chmod +x ~/.local/bin/agy_acp_server
 ```
 
+The daemon resolves `agy_acp_server` from its own `$PATH`, so make sure `~/.local/bin` is on it (macOS zsh does not add it by default), or skip the wrapper and use the `.par` path below.
+
 Linux and Windows use the same URL with `linux/...-linux-x86_64.zip` or `windows/...-windows-x86_64.zip`. `1.1.1` is the current ACP registry version and changes with releases, so check the registry if the download 404s.
 
 If you would rather not add a wrapper, point the provider at the `.par` directly:
@@ -193,11 +195,11 @@ If you would rather not add a wrapper, point the provider at the `.par` directly
 }
 ```
 
-The kernel keeps its own home at `~/.gemini/antigravity-acp/` (move it with `GEMINI_HOME`), separate from the `agy` CLI's `~/.gemini/antigravity-cli/`. Being signed in to the `agy` CLI does not sign in the ACP provider, and the kernel has no login command. Sign in from Paseo when the provider first connects; the kernel opens a Google OAuth URL and finishes on a local callback port. Accounts without free-tier eligibility fail onboarding and are signed out again; use a different Google account or a GCP project on the standard tier.
+The kernel keeps its own home at `~/.gemini/antigravity-acp/` (move it with `GEMINI_HOME`), separate from the `agy` CLI's `~/.gemini/antigravity-cli/`. Being signed in to the `agy` CLI does not sign in the ACP provider, and the kernel has no login command. The only way in is the ACP `authenticate` request, which Paseo does not send yet, so an unauthenticated kernel rejects prompts with an auth error. Sign in once with an ACP client that supports `authenticate` (or a short script that sends `initialize` then `authenticate` with `methodId: "oauth-personal"` over stdio); the kernel prints a Google OAuth URL on stderr and stores the result in its home directory, which Paseo then reuses. Accounts without free-tier eligibility fail onboarding and are signed out again; use a different Google account or a GCP project on the standard tier.
 
 Reasoning effort is part of the model id (`-high`, `-medium`, `-low`), so there is no separate thinking option for this provider.
 
-The kernel accepts only HTTP and SSE MCP servers. Paseo's own tools are served over HTTP, so they work; stdio MCP servers configured for this provider are ignored.
+The kernel advertises only HTTP and SSE MCP support. Paseo's own tools are served over HTTP, so they work; stdio MCP servers configured for this provider are not supported by the kernel.
 
 ## Adding or relabeling models
 

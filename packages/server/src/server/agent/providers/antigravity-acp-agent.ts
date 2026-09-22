@@ -19,6 +19,8 @@ const ANTIGRAVITY_DIAGNOSTIC_PHASE_TIMEOUT_MS = 45_000;
 // so wait for it; the cap only bounds the case where it never arrives.
 const ANTIGRAVITY_INITIAL_COMMANDS_WAIT_TIMEOUT_MS = 5_000;
 
+// Modes and models come from runtime discovery. Paseo validates a requested mode before the session
+// exists, so the shim cannot remap ids the kernel lacks (it has no plan session mode, only /plan).
 export class AntigravityACPAgentClient extends GenericACPAgentClient {
   constructor(options: AntigravityACPAgentClientOptions) {
     super({

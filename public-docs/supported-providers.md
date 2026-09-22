@@ -25,6 +25,7 @@ Pick any of these from the in-app provider catalog. Each entry is a one-click in
 
 - [Agoragentic](https://agoragentic.com), agent marketplace with 174+ AI capabilities.
 - [Amp](https://github.com/tao12345666333/amp-acp), frontier coding agent.
+- [Antigravity](https://antigravity.google/docs), Google's agent via the official `agy_acp_server` kernel. The binary is not on `$PATH`; install it yourself and set its path under [Custom providers](/docs/custom-providers).
 - [Auggie CLI](https://www.augmentcode.com/), Augment Code's agent backed by their context engine.
 - [Autohand Code](https://www.autohand.ai/cli/), Autohand AI's coding agent.
 - [Cline](https://cline.bot/cli), autonomous coding agent.

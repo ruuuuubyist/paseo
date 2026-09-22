@@ -156,6 +156,45 @@ Any agent that speaks [ACP](https://agentclientprotocol.com) over stdio can be a
 }
 ```
 
+### Antigravity
+
+Installing the `agy` CLI does not give you the ACP kernel. Google ships `agy_acp_server` as a separate zip, and Paseo's catalog entry runs it as `agy_acp_server` from `$PATH`. There is no Intel Mac build; only `darwin-arm64`, `linux-x86_64`, and `windows-x86_64` archives exist.
+
+The archive holds two files, `agy_acp_server.par` and `localharness_external`, which must stay in the same directory. Do not symlink the `.par` into your bin directory; wrap it instead. On Apple Silicon:
+
+```bash
+mkdir -p ~/.local/opt/agy-acp ~/.local/bin
+curl -fL -o /tmp/agy-acp.zip \
+  https://dl.google.com/agy-extensions/releases/macos/agy-acp-server-agy_acp_server_1.1.1-darwin-arm64.zip
+unzip -o /tmp/agy-acp.zip -d ~/.local/opt/agy-acp
+chmod +x ~/.local/opt/agy-acp/agy_acp_server.par ~/.local/opt/agy-acp/localharness_external
+xattr -dr com.apple.quarantine ~/.local/opt/agy-acp
+cat > ~/.local/bin/agy_acp_server <<'EOF'
+#!/bin/sh
+exec "$HOME/.local/opt/agy-acp/agy_acp_server.par" "$@"
+EOF
+chmod +x ~/.local/bin/agy_acp_server
+```
+
+Linux and Windows use the same URL with `linux/...-linux-x86_64.zip` or `windows/...-windows-x86_64.zip`. `1.1.1` is the current ACP registry version and changes with releases, so check the registry if the download 404s.
+
+If you would rather not add a wrapper, point the provider at the `.par` directly:
+
+```json
+{
+  "agents": {
+    "providers": {
+      "agy": {
+        "extends": "acp",
+        "command": ["/Users/you/.local/opt/agy-acp/agy_acp_server.par"]
+      }
+    }
+  }
+}
+```
+
+The first connection signs in with your Google account. Sessions are stored under `~/.gemini/antigravity-acp/`.
+
 ## Adding or relabeling models
 
 `models` replaces the model list entirely. `additionalModels` merges with runtime-discovered models (ACP) or with `models`, use it to add an extra entry or relabel a discovered one without redeclaring the full list. An entry with the same `id` as a discovered model updates it in place.

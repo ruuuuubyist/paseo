@@ -49,7 +49,7 @@ Adding an ACP agent defaults to a catalog entry rather than full built-in promot
   - Asynchronous command discovery (`waitForInitialCommands`)
   - Vendor extension notifications (`extensionCommandsParser`, kiro)
   - Missing kernel mode mapping (`providerModeWriter`, agy maps Paseo's `plan` to kernel `default`)
-  - Slow process cold start in the provider diagnostic probe (`diagnosticPhaseTimeoutMs`, agy's PyInstaller binary). Live session start has no timeout, so this only widens the probe budget.
+  - Slow first spawn in the provider diagnostic probe (`diagnosticPhaseTimeoutMs`, agy's PyInstaller binary unpacks on first launch). Live session start has no timeout, so this only widens the probe budget.
 - **Built-in ACP provider**: `copilot` (`copilot-acp-agent.ts`) is currently the only built-in ACP provider. Reserve built-in promotion (manifest in `packages/protocol/src/provider-manifest.ts`, `PROVIDER_CLIENT_FACTORIES` in `packages/server/src/server/agent/provider-registry.ts`, E2E test configs, and app icons) for providers that require dedicated daemon lifecycle wiring or non-ACP features.
 
 Copilot custom agents are exposed through ACP session config, not the slash-command list. When custom agents are available, Copilot returns a select config option with `id: "agent"` and `category: "_agent"`; Paseo maps that to the `agent` provider feature. Copilot uses the agent display name as the option value, and the blank value means the default Copilot agent.

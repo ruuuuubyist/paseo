@@ -193,7 +193,9 @@ If you would rather not add a wrapper, point the provider at the `.par` directly
 }
 ```
 
-The first connection signs in with your Google account. Sessions are stored under `~/.gemini/antigravity-acp/`.
+The kernel keeps its own home at `~/.gemini/antigravity-acp/` (move it with `GEMINI_HOME`), separate from the `agy` CLI's `~/.gemini/antigravity-cli/`. Being signed in to the `agy` CLI does not sign in the ACP provider; the first connection asks you to sign in again.
+
+The kernel accepts only HTTP and SSE MCP servers. Paseo's own tools are served over HTTP, so they work; stdio MCP servers configured for this provider are ignored.
 
 ## Adding or relabeling models
 

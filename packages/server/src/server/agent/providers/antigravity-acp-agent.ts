@@ -13,7 +13,8 @@ interface AntigravityACPAgentClientOptions {
   providerParams?: unknown;
 }
 
-// agy_acp_server is a PyInstaller onefile binary with a ~15-16s cold start; the default 20s probe budget is too tight.
+// agy_acp_server is a PyInstaller onefile binary. The first spawn unpacks the archive (measured ~6s on
+// macOS arm64, slower on Windows); later spawns take ~1s. Widen the default 20s probe budget for that.
 const ANTIGRAVITY_DIAGNOSTIC_PHASE_TIMEOUT_MS = 45_000;
 
 // agy_acp_server publishes slash commands and skills asynchronously after session/new, like traecli/kiro.
@@ -21,15 +22,15 @@ const ANTIGRAVITY_INITIAL_COMMANDS_WAIT_TIMEOUT_MS = 10_000;
 
 const ANTIGRAVITY_KERNEL_DEFAULT_MODE_ID = "default";
 
-// The kernel's only session modes. Passed as defaultModes so the handled providerModeWriter
-// branch in ACPAgentSession keeps a non-empty mode list after the plan -> default rewrite.
+// Kernel session modes as reported by users of the kernel. Passed as defaultModes so the handled
+// providerModeWriter branch in ACPAgentSession keeps a non-empty mode list after the plan -> default rewrite.
 export const ANTIGRAVITY_MODES: AgentMode[] = [
   { id: ANTIGRAVITY_KERNEL_DEFAULT_MODE_ID, label: "Default" },
   { id: "auto_edit", label: "Auto Edit" },
   { id: "yolo", label: "Yolo" },
 ];
 
-// agy_acp_server has no plan mode. providerModeWriter runs before mode validation on both
+// agy_acp_server does not offer a plan mode. providerModeWriter runs before mode validation on both
 // setMode and session-start overrides (modeIdTransformer only normalizes incoming mode updates).
 export async function writeAntigravityProviderMode(
   context: ACPProviderModeWriterContext,

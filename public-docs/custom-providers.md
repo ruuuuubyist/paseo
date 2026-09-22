@@ -193,7 +193,9 @@ If you would rather not add a wrapper, point the provider at the `.par` directly
 }
 ```
 
-The kernel keeps its own home at `~/.gemini/antigravity-acp/` (move it with `GEMINI_HOME`), separate from the `agy` CLI's `~/.gemini/antigravity-cli/`. Being signed in to the `agy` CLI does not sign in the ACP provider; the first connection asks you to sign in again.
+The kernel keeps its own home at `~/.gemini/antigravity-acp/` (move it with `GEMINI_HOME`), separate from the `agy` CLI's `~/.gemini/antigravity-cli/`. Being signed in to the `agy` CLI does not sign in the ACP provider, and the kernel has no login command. Sign in from Paseo when the provider first connects; the kernel opens a Google OAuth URL and finishes on a local callback port. Accounts without free-tier eligibility fail onboarding and are signed out again; use a different Google account or a GCP project on the standard tier.
+
+Reasoning effort is part of the model id (`-high`, `-medium`, `-low`), so there is no separate thinking option for this provider.
 
 The kernel accepts only HTTP and SSE MCP servers. Paseo's own tools are served over HTTP, so they work; stdio MCP servers configured for this provider are ignored.
 

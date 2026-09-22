@@ -1583,7 +1583,7 @@ describe("ACPAgentSession Zed parity", () => {
       availableModes: [
         { id: "default", label: "Default" },
         { id: "auto_edit", label: "Auto Edit" },
-        { id: "yolo", label: "Yolo" },
+        { id: "yolo", label: "YOLO" },
       ],
       connection: { setSessionMode },
     });
@@ -1603,7 +1603,7 @@ describe("ACPAgentSession Zed parity", () => {
       availableModes: [
         { id: "default", label: "Default" },
         { id: "auto_edit", label: "Auto Edit" },
-        { id: "yolo", label: "Yolo" },
+        { id: "yolo", label: "YOLO" },
       ],
       connection: { setSessionMode },
     });

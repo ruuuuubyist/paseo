@@ -17,8 +17,9 @@ interface AntigravityACPAgentClientOptions {
 // macOS arm64, slower on Windows); later spawns take ~1s. Widen the default 20s probe budget for that.
 const ANTIGRAVITY_DIAGNOSTIC_PHASE_TIMEOUT_MS = 45_000;
 
-// agy_acp_server publishes slash commands and skills asynchronously after session/new, like traecli/kiro.
-const ANTIGRAVITY_INITIAL_COMMANDS_WAIT_TIMEOUT_MS = 10_000;
+// agy_acp_server sends available_commands_update asynchronously right after session/new resolves,
+// so wait for it; the cap only bounds the case where it never arrives.
+const ANTIGRAVITY_INITIAL_COMMANDS_WAIT_TIMEOUT_MS = 5_000;
 
 const ANTIGRAVITY_KERNEL_DEFAULT_MODE_ID = "default";
 
@@ -30,7 +31,7 @@ export const ANTIGRAVITY_MODES: AgentMode[] = [
   { id: "yolo", label: "YOLO" },
 ];
 
-// agy_acp_server has no plan mode. providerModeWriter runs before mode validation on both
+// agy_acp_server does not expose plan as a session mode. providerModeWriter runs before mode validation on both
 // setMode and session-start overrides (modeIdTransformer only normalizes incoming mode updates).
 export async function writeAntigravityProviderMode(
   context: ACPProviderModeWriterContext,

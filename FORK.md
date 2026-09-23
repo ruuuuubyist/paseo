@@ -31,7 +31,6 @@ git push fork main
 
 git switch downstream/main
 git merge --ff-only fork/downstream/main
-old=$(git rev-parse HEAD)
 git rebase origin/main
 npm run typecheck
 npm run lint
@@ -40,9 +39,50 @@ git push --force-with-lease --force-if-includes fork downstream/main
 
 ## 열린 작업 브랜치 이동
 
-갱신 절차와 같은 셸(`$old` 변수 유지)에서 아래 명령으로 작업 브랜치를 새 `downstream/main` 위로 옮깁니다. 옮기지 않으면 PR diff에 rebase 이전 커밋이 섞입니다.
+`downstream/main`을 base로 하는 열린 PR 브랜치를 새 `downstream/main` 위로 옮깁니다. 옮기지 않으면 PR diff에 rebase 이전 커밋이 섞입니다.
+
+로컬 git 기록으로 각 PR의 분기점을 찾아 PR 고유 커밋만 이동합니다. 다른 worktree에서 체크아웃된 브랜치와 push하지 않은 로컬 커밋이 있는 브랜치는 건너뜁니다. rebase 충돌이나 push 거절이 발생한 브랜치는 수동으로 해결합니다.
 
 ```bash
-git rebase --onto downstream/main "$old" feat/<topic>
-git push --force-with-lease --force-if-includes fork feat/<topic>
+git fetch fork
+
+gh pr list --repo ruuuuubyist/paseo --base downstream/main --state open \
+  --json headRefName,isCrossRepository \
+  --jq '.[] | select(.isCrossRepository == false) | .headRefName' | \
+while read -r branch; do
+  [ -z "$branch" ] && continue
+
+  if git worktree list --porcelain | grep -Fxq "branch refs/heads/$branch"; then
+    echo "건너뜀 (worktree에서 사용 중): $branch"
+    continue
+  fi
+
+  if git show-ref --verify --quiet "refs/heads/$branch"; then
+    if [ "$(git rev-list --count "fork/$branch..$branch" 2>/dev/null)" -gt 0 ]; then
+      echo "건너뜀 (push하지 않은 로컬 커밋 있음): $branch"
+      continue
+    fi
+  fi
+
+  git branch -f "$branch" "fork/$branch"
+
+  base=$(git merge-base --fork-point fork/downstream/main "$branch" 2>/dev/null)
+  if [ -z "$base" ]; then
+    echo "분기점 확인 실패 (수동 해결 필요): $branch"
+    continue
+  fi
+
+  if ! git rebase --onto downstream/main "$base" "$branch"; then
+    git rebase --abort
+    echo "rebase 실패 (수동 해결 필요): $branch"
+    continue
+  fi
+
+  if ! git push --force-with-lease --force-if-includes fork "$branch"; then
+    echo "push 실패 (수동 해결 필요): $branch"
+    continue
+  fi
+done
+
+git switch downstream/main
 ```

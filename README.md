@@ -193,6 +193,29 @@ npm run build:server
 npm run typecheck
 ```
 
+## Fork 유지보수
+
+upstream을 따라가는 fork는 기본 브랜치와 fork 전용 변경을 통합하는 브랜치를 분리한다.
+
+- `main`: `origin/main`을 `--ff-only`로 반영한다. fork 전용 커밋은 넣지 않는다.
+- `downstream/main`: fork 전용 작업을 통합하는 장기 브랜치다. 작업 PR은 이 브랜치를 대상으로 한다.
+- `feat/*`: 개별 작업 브랜치다.
+
+upstream `main`을 갱신할 때는 다음 순서로 실행한다.
+
+```bash
+git fetch origin main
+git switch main
+git merge --ff-only origin/main
+git push fork main
+
+git switch downstream/main
+git rebase origin/main
+git push --force-with-lease fork downstream/main
+```
+
+`downstream/main`은 rebase로 커밋이 바뀌므로 통합 담당자만 force push할 수 있다. 여러 사람이 이 브랜치를 직접 기반으로 작업하고 force push를 허용할 수 없다면 `origin/main`을 이 브랜치에 merge하여 기록을 보존한다.
+
 ## Sponsors
 
 Paseo is built by one person and funded by the people who use it. Support the work on [GitHub Sponsors](https://github.com/sponsors/boudra), or [sponsor a spot](https://buy.stripe.com/8x24gBczR7LNaokcve2sM00) for $500 a month to put your company's logo here and on the [paseo.sh homepage](https://paseo.sh/sponsor#spot).

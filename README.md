@@ -193,44 +193,6 @@ npm run build:server
 npm run typecheck
 ```
 
-## Fork 유지보수
-
-원격 `origin`은 upstream(`getpaseo/paseo`), `fork`는 이 fork(`ruuuuubyist/paseo`)를 가리킨다.
-
-- `main`: `origin/main`을 `--ff-only`로 반영한다. fork 전용 커밋은 넣지 않는다.
-- `downstream/main`: fork 전용 작업을 통합하는 장기 브랜치다. 작업 PR은 이 브랜치로 squash merge한다. merge commit으로 통합하면 rebase 때 충돌을 다시 해결해야 한다.
-- `feat/*`: `downstream/main`에서 분기하는 작업 브랜치다. upstream에 기여할 변경은 `origin/main`에서 분기해 `getpaseo/paseo`에 PR을 연다.
-
-GitHub 웹은 fork 브랜치의 PR base를 upstream 저장소로 잡으므로, fork 작업 PR은 base를 `ruuuuubyist/paseo`의 `downstream/main`으로 바꿔 만든다. `gh`는 처음 한 번 `gh repo set-default ruuuuubyist/paseo`를 실행한 뒤 `gh pr create --base downstream/main`으로 PR을 만든다.
-
-upstream `main`을 갱신할 때는 다음 순서로 실행한다.
-
-```bash
-git fetch origin main
-git fetch fork
-
-git switch main
-git merge --ff-only origin/main
-git push fork main
-
-git switch downstream/main
-git merge --ff-only fork/downstream/main
-old=$(git rev-parse HEAD)
-git rebase origin/main
-npm run typecheck
-npm run lint
-git push --force-with-lease --force-if-includes fork downstream/main
-```
-
-`downstream/main` force push는 통합 담당자만 한다. GitHub에서 머지된 PR은 `fork/downstream/main`에만 있으므로 rebase 전에 반영한다. `--force-with-lease`는 원격 추적 브랜치와만 비교해서 fetch 후 반영하지 않은 머지 커밋을 덮어쓸 수 있다. `--force-if-includes`를 함께 쓰면 이 경우 push가 거절된다.
-
-열린 작업 브랜치는 같은 셸에서 새 `downstream/main` 위로 옮긴다. 옮기지 않으면 PR diff에 rebase 전 커밋이 섞인다.
-
-```bash
-git rebase --onto downstream/main "$old" feat/<topic>
-git push --force-with-lease --force-if-includes fork feat/<topic>
-```
-
 ## Sponsors
 
 Paseo is built by one person and funded by the people who use it. Support the work on [GitHub Sponsors](https://github.com/sponsors/boudra), or [sponsor a spot](https://buy.stripe.com/8x24gBczR7LNaokcve2sM00) for $500 a month to put your company's logo here and on the [paseo.sh homepage](https://paseo.sh/sponsor#spot).

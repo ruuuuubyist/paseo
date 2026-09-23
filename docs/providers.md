@@ -43,7 +43,13 @@ and tool identity without approving native tools.
 
 Extend `ACPAgentClient` from `packages/server/src/server/agent/providers/acp-agent.ts`. The base class handles process spawning, stdio transport, session lifecycle, streaming, permissions, and model discovery. You provide configuration (command, modes, capabilities) and optionally override `isAvailable()` for auth checks.
 
-The only built-in ACP provider today is `copilot` (`copilot-acp-agent.ts`). `GenericACPAgentClient` (`generic-acp-agent.ts`) is also ACP-based but is used for user-defined custom providers configured via `extends: "acp"` overrides — see [docs/custom-providers.md](custom-providers.md).
+Adding an ACP agent defaults to a catalog entry rather than full built-in promotion:
+
+- **Catalog entry (with optional shim) -- default**: Add the entry to `packages/app/src/data/acp-provider-catalog.ts`. Installing from the catalog creates an `extends: "acp"` override in daemon config (see [docs/custom-providers.md](custom-providers.md)), backed by `GenericACPAgentClient` (`packages/server/src/server/agent/providers/generic-acp-agent.ts`). When a kernel diverges from standard ACP, do not promote it to a built-in provider. Create a subclass in `packages/server/src/server/agent/providers/<name>-acp-agent.ts` extending `GenericACPAgentClient`, and branch on `providerId` inside `addDerivedProviders` in `packages/server/src/server/agent/provider-registry.ts`. `cursor`, `kimi`, `kiro`, `traecli`, and `agy` (Antigravity) use this tier. Shims absorb kernel variances such as:
+  - Asynchronous command discovery (`waitForInitialCommands`)
+  - Vendor extension notifications (`extensionCommandsParser`, kiro)
+  - Slow first spawn in the provider diagnostic probe (`diagnosticPhaseTimeoutMs`, agy's PyInstaller binary unpacks on first launch). Live session start has no timeout, so this only widens the probe budget.
+- **Built-in ACP provider**: `copilot` (`copilot-acp-agent.ts`) is currently the only built-in ACP provider. Reserve built-in promotion (manifest in `packages/protocol/src/provider-manifest.ts`, `PROVIDER_CLIENT_FACTORIES` in `packages/server/src/server/agent/provider-registry.ts`, E2E test configs, and app icons) for providers that require dedicated daemon lifecycle wiring or non-ACP features.
 
 Copilot custom agents are exposed through ACP session config, not the slash-command list. When custom agents are available, Copilot returns a select config option with `id: "agent"` and `category: "_agent"`; Paseo maps that to the `agent` provider feature. Copilot uses the agent display name as the option value, and the blank value means the default Copilot agent.
 
@@ -287,7 +293,7 @@ export class CopilotACPAgentClient extends ACPAgentClient {
 
 ### 2. Add to the provider manifest
 
-In `packages/server/src/server/agent/provider-manifest.ts`, add mode definitions with UI metadata (icons, color tiers) and a provider definition entry.
+In `packages/protocol/src/provider-manifest.ts`, add mode definitions with UI metadata (icons, color tiers) and a provider definition entry.
 
 First, define the modes with visual metadata:
 

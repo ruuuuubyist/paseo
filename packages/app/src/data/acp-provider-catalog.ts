@@ -24,6 +24,15 @@ const CATALOG_DATA = [
     command: ["npx", "-y", "agoragentic-mcp@1.3.6", "--acp"],
   },
   {
+    id: "agy",
+    title: "Antigravity",
+    description: "Google's Antigravity agent via the official agy_acp_server ACP kernel",
+    version: "manual",
+    iconId: "agy",
+    installLink: "https://antigravity.google/docs",
+    command: ["agy_acp_server"],
+  },
+  {
     id: "amp-acp",
     title: "Amp",
     description: "ACP wrapper for Amp - the frontier coding agent",

@@ -43,6 +43,11 @@ const mockState = vi.hoisted(() => {
         env?: Record<string, string>;
         providerParams?: unknown;
       }>,
+      agy: [] as Array<{
+        command: string[];
+        env?: Record<string, string>;
+        providerParams?: unknown;
+      }>,
       kimi: [] as Array<{
         command: string[];
         env?: Record<string, string>;
@@ -448,6 +453,59 @@ vi.mock("./providers/trae-acp-agent.js", () => ({
         env: options.env,
       };
       mockState.constructorArgs.trae.push({
+        command: options.command,
+        env: options.env,
+        providerParams: options.providerParams,
+      });
+    }
+
+    async createSession(): Promise<never> {
+      throw new Error("not implemented");
+    }
+
+    async resumeSession(): Promise<never> {
+      throw new Error("not implemented");
+    }
+
+    async fetchCatalog(): Promise<ProviderCatalog> {
+      return {
+        models: mockState.runtimeModels.get(this.provider) ?? [],
+        modes: [],
+      };
+    }
+
+    async isAvailable(): Promise<boolean> {
+      return true;
+    }
+  },
+}));
+
+vi.mock("./providers/antigravity-acp-agent.js", () => ({
+  AntigravityACPAgentClient: class AntigravityACPAgentClient {
+    readonly capabilities = {
+      supportsStreaming: true,
+      supportsSessionPersistence: true,
+      supportsDynamicModes: true,
+      supportsMcpServers: true,
+      supportsReasoningStream: true,
+      supportsToolInvocations: true,
+    };
+    readonly provider = "acp";
+    readonly runtimeSettings?: unknown;
+
+    constructor(options: {
+      command: string[];
+      env?: Record<string, string>;
+      providerParams?: unknown;
+    }) {
+      this.runtimeSettings = {
+        command: {
+          mode: "replace",
+          argv: options.command,
+        },
+        env: options.env,
+      };
+      mockState.constructorArgs.agy.push({
         command: options.command,
         env: options.env,
         providerParams: options.providerParams,
@@ -914,6 +972,33 @@ test("traecli provider extending acp uses TraeACPAgentClient", () => {
     },
     {
       command: ["traecli", "acp", "serve"],
+      env: undefined,
+      providerParams: undefined,
+    },
+  ]);
+  expect(mockState.constructorArgs.genericAcp).toEqual([]);
+});
+
+test("agy provider extending acp uses AntigravityACPAgentClient", () => {
+  const registry = buildProviderRegistry(logger, {
+    providerOverrides: {
+      agy: {
+        extends: "acp",
+        label: "Antigravity",
+        command: ["agy_acp_server"],
+      },
+    },
+  });
+
+  expect(registry.agy.createClient(logger).provider).toBe("agy");
+  expect(mockState.constructorArgs.agy).toEqual([
+    {
+      command: ["agy_acp_server"],
+      env: undefined,
+      providerParams: undefined,
+    },
+    {
+      command: ["agy_acp_server"],
       env: undefined,
       providerParams: undefined,
     },

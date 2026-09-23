@@ -59,6 +59,17 @@ describe("ACP provider catalog", () => {
     expect(findProvider("minimax-code").iconSvg).toContain("<svg");
   });
 
+  it("registers Antigravity through the official agy_acp_server ACP kernel", () => {
+    const entry = findProvider("agy");
+
+    expect(entry.command).toEqual(["agy_acp_server"]);
+    expect(entry.iconSvg).toContain("<svg");
+
+    const patch = buildAcpProviderConfigPatch(entry);
+    expect(patch.providers?.agy?.extends).toBe("acp");
+    expect(patch.providers?.agy?.command).toEqual(["agy_acp_server"]);
+  });
+
   it("maps a catalog entry to the daemon provider config patch", () => {
     expect(buildAcpProviderConfigPatch(findProvider("amp-acp"))).toEqual({
       providers: {

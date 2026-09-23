@@ -34,6 +34,7 @@ import type {
   ProviderProfileModel,
   ProviderRuntimeSettings,
 } from "./provider-launch-config.js";
+import { AntigravityACPAgentClient } from "./providers/antigravity-acp-agent.js";
 import { ClaudeAgentClient } from "./providers/claude/agent.js";
 import { CodexAppServerAgentClient } from "./providers/codex-app-server-agent.js";
 import { CopilotACPAgentClient } from "./providers/copilot-acp-agent.js";
@@ -812,6 +813,9 @@ function addDerivedProviders(
           }
           if (providerId === "traecli") {
             return new TraeACPAgentClient(acpOptions);
+          }
+          if (providerId === "agy") {
+            return new AntigravityACPAgentClient(acpOptions);
           }
           return new GenericACPAgentClient(acpOptions);
         },
